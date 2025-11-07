@@ -2,13 +2,13 @@
 require_once 'functions.php';
 
 $email = $_GET['email'] ?? '';
-$unsubscribed = false;
+$code = $_GET['code'] ?? '';
+$verified = false;
 $error = false;
 
-if (!empty($email)) {
-    $email = urldecode($email);
-    $unsubscribed = unsubscribeEmail($email);
-    if (!$unsubscribed) {
+if (!empty($email) && !empty($code)) {
+    $verified = verifySubscription($email, $code);
+    if (!$verified) {
         $error = true;
     }
 }
@@ -18,7 +18,7 @@ if (!empty($email)) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Unsubscribe - Task Scheduler</title>
+    <title>Email Verification - Task Scheduler</title>
     <style>
         * {
             margin: 0;
@@ -36,7 +36,7 @@ if (!empty($email)) {
             padding: 20px;
         }
 
-        .unsubscribe-container {
+        .verification-container {
             background: white;
             border-radius: 16px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.3);
@@ -68,11 +68,6 @@ if (!empty($email)) {
             color: #dc3545;
         }
 
-        .icon.warning {
-            background: #fff3cd;
-            color: #856404;
-        }
-
         h1 {
             color: #333;
             margin-bottom: 20px;
@@ -84,15 +79,6 @@ if (!empty($email)) {
             line-height: 1.8;
             margin-bottom: 30px;
             font-size: 1.1rem;
-        }
-
-        .email {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 30px;
-            color: #333;
-            font-weight: 600;
         }
 
         .btn {
@@ -125,7 +111,7 @@ if (!empty($email)) {
         }
 
         @media (max-width: 768px) {
-            .unsubscribe-container {
+            .verification-container {
                 padding: 30px 20px;
             }
 
@@ -136,23 +122,21 @@ if (!empty($email)) {
     </style>
 </head>
 <body>
-    <div class="unsubscribe-container">
-        <?php if ($unsubscribed): ?>
+    <div class="verification-container">
+        <?php if ($verified): ?>
             <div class="icon success">✓</div>
-            <h1>Unsubscribed Successfully</h1>
-            <div class="email"><?php echo htmlspecialchars($email); ?></div>
-            <p>You have been successfully unsubscribed from task reminders. You will no longer receive hourly emails.</p>
-            <p style="font-size: 0.95rem; color: #999;">You can subscribe again anytime from the Task Scheduler.</p>
+            <h1>Email Verified!</h1>
+            <p>Your email address has been successfully verified. You will now receive hourly reminders for your pending tasks.</p>
             <a href="index.php" class="btn">Go to Task Scheduler</a>
         <?php elseif ($error): ?>
-            <div class="icon warning">⚠</div>
-            <h1>Already Unsubscribed</h1>
-            <p>This email address is not currently subscribed to task reminders.</p>
+            <div class="icon error">✕</div>
+            <h1>Verification Failed</h1>
+            <p>The verification link is invalid or has expired. Please try subscribing again.</p>
             <a href="index.php" class="btn">Back to Home</a>
         <?php else: ?>
-            <div class="icon error">✕</div>
+            <div class="icon error">⚠</div>
             <h1>Invalid Request</h1>
-            <p>Missing email parameter. Please use the unsubscribe link from your email.</p>
+            <p>Missing verification parameters. Please use the link from your email.</p>
             <a href="index.php" class="btn">Back to Home</a>
         <?php endif; ?>
     </div>
